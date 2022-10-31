@@ -6,11 +6,13 @@ window_controler = Tk()
 
 class Functions():
     def limpar_tela(self):
+        self.entry_codigo.delete(0, END)
         self.entry_tarefa.delete(0, END)
         self.entry_cliente.delete(0, END)
         self.entry_status.delete(0, END)
         self.entry_ano.delete(0, END)
         self.entry_mes.delete(0, END)
+        self.entry_dia.delete(0, END)
 
     def conectar_bd(self):
         self.conn = sqlite3.connect("controle_semanal.bd")
@@ -31,7 +33,8 @@ class Functions():
                             cliente VARCHAR(100),
                             status BOOLEAN,
                             ano INTEGER,
-                            mes INTEGER
+                            mes INTEGER,
+                            dia INTEGER
                         );
                     """)
         self.conn.commit()
@@ -42,7 +45,7 @@ class Functions():
         self.list.delete(*self.list.get_children())
         self.conectar_bd()
         lista = self.cursor.execute("""
-                            SELECT codigo, tarefa, cliente, status, ano, mes 
+                            SELECT codigo, tarefa, cliente, status, ano, mes, dia 
                             FROM controle 
                             ORDER BY tarefa ASC;
                             """)
@@ -56,11 +59,12 @@ class Functions():
         self.status = self.entry_status.get()
         self.ano = self.entry_ano.get()
         self.mes = self.entry_mes.get()
+        self.dia = self.entry_dia.get()
 
         self.conectar_bd()
         self.cursor.execute("""
-                        INSERT INTO controle (tarefa, cliente, status, ano, mes)
-                         VALUES (?, ?, ?, ?, ?)""", (self.tarefa, self.cliente, self.status, self.ano, self.mes))
+                        INSERT INTO controle (tarefa, cliente, status, ano, mes, dia)
+                         VALUES (?, ?, ?, ?, ?, ?)""", (self.tarefa, self.cliente, self.status, self.ano, self.mes, self.dia))
         self.conn.commit()
         self.desconecta_bd()
         self.select_bd()
@@ -71,21 +75,23 @@ class Functions():
         self.list.selection()
 
         for n in self.list.selection():
-            col1, col2, col3, col4, col5, col6 = self.list.item(n, 'values')
-            self.codigo_entry.insert(END, col1)
+            col1, col2, col3, col4, col5, col6, col7 = self.list.item(n, 'values')
+            self.entry_codigo.insert(END, col1)
             self.entry_tarefa.insert(END, col2)
             self.entry_cliente.insert(END, col3)
             self.entry_status.insert(END, col4)
             self.entry_ano.insert(END, col5)
             self.entry_mes.insert(END, col6)
+            self.entry_dia.insert(END, col7)
 
     def delete_client(self):
-        self.codigo = self.codigo_entry.get()
+        self.codigo = self.entry_codigo.get()
         self.tarefa = self.entry_tarefa.get()
         self.cliente = self.entry_cliente.get()
         self.status = self.entry_status.get()
         self.ano = self.entry_ano.get()
         self.mes = self.entry_mes.get()
+        self.dia = self.entry_dia.get()
 
         self.conectar_bd()
         self.cursor.execute("""DELETE FROM controle WHERE codigo = ? """, (self.codigo))
@@ -95,17 +101,18 @@ class Functions():
         self.select_bd()
 
     def update_client(self):
-        self.codigo = self.codigo_entry.get()
+        self.codigo = self.entry_codigo.get()
         self.tarefa = self.entry_tarefa.get()
         self.cliente = self.entry_cliente.get()
         self.status = self.entry_status.get()
         self.ano = self.entry_ano.get()
         self.mes = self.entry_mes.get()
+        self.dia = self.entry_dia.get()
 
         self.conectar_bd()
         self.cursor.execute("""
-                        UPDATE  controle SET tarefa = ?, cliente = ?, status = ?, ano = ?, mes = ?
-                        WHERE codigo = ?""", (self.tarefa, self.cliente, self.status, self.ano, self.mes, self.codigo))
+                        UPDATE  controle SET tarefa = ?, cliente = ?, status = ?, ano = ?, mes = ?, dia = ?
+                        WHERE codigo = ?""", (self.tarefa, self.cliente, self.status, self.ano, self.mes, self.dia, self.codigo))
         self.conn.commit()
         self.desconecta_bd()
         self.select_bd()
@@ -119,12 +126,13 @@ class Functions():
         # self.entry_mes.insert(END, '%')
         self.ano = self.entry_ano.get()
         self.mes = self.entry_mes.get()
+        self.dia = self.entry_dia.get()
 
         self.cursor.execute("""
-                        SELECT codigo, tarefa, cliente, status, ano, mes 
+                        SELECT codigo, tarefa, cliente, status, ano, mes, dia 
                         FROM controle
-                        WHERE ano = ? AND mes = ? 
-                        ORDER BY tarefa ASC
+                        WHERE ano = ? AND mes = ?  
+                        ORDER BY dia ASC
                         """, (self.ano, self.mes))
 
         searchTar = self.cursor.fetchall()
@@ -168,6 +176,12 @@ class Controler(Functions):
         self.frame_2.place(rely=0.42, relx=0.01, relwidth=0.98, relheight=0.56)
 
     def create_labels(self):
+        self.lb_codigo = Label(self.frame_1, text= "Código", font= 15)
+        self.lb_codigo.place(rely= 0.01, relx= 0.4, relwidth= 0.045)
+
+        self.entry_codigo = Entry(self.frame_1)
+        self.entry_codigo.place(rely= 0.12, relx= 0.4, relwidth= 0.045, relheight= 0.07)
+
         self.lb_title = Label(self.frame_3, text= "CONTROLE SEMANAL", font= "-weight bold -size 28", bg= "DimGray", fg= "White")
         self.lb_title.place(rely= 0.01, relx= 0.01, relwidth= 0.98, relheight= 0.9)
 
@@ -201,6 +215,12 @@ class Controler(Functions):
         self.entry_mes = Entry(self.frame_1)
         self.entry_mes.place(rely= 0.36, relx= 0.3, relwidth= 0.05, relheight= 0.07)
 
+        self.lb_dia = Label(self.frame_1, text= "Dia", font= 15)
+        self.lb_dia.place(rely= 0.50, relx= 0.3, relwidth= 0.045)
+
+        self.entry_dia = Entry(self.frame_1)
+        self.entry_dia.place(rely= 0.61, relx= 0.3, relwidth= 0.05, relheight= 0.07)
+
     def create_buttons(self):
         self.bt_cadastrar = Button(self.frame_1, text= "Cadastrar",
                                    background= self.color_buttons,
@@ -228,7 +248,7 @@ class Controler(Functions):
         self.bt_limpar.place(rely=0.8, relx=0.38, relwidth=0.07, relheight=0.1)
 
     def list_frame_2(self):
-        self.list = ttk.Treeview(self.frame_2, height= 3, columns= ("col1", "col2", "col3", "col4", "col5", "col6"))
+        self.list = ttk.Treeview(self.frame_2, height= 3, columns= ("col1", "col2", "col3", "col4", "col5", "col6", "col7"))
 
         self.list.heading("#0", text= "")
         self.list.heading("#1", text= "Código")
@@ -237,14 +257,16 @@ class Controler(Functions):
         self.list.heading("#4", text= "Status")
         self.list.heading("#5", text= "Ano")
         self.list.heading("#6", text= "Mês")
+        self.list.heading("#7", text= "Dia")
 
         self.list.column("#0", width=1)
         self.list.column("#1", width= 50)
         self.list.column("#2", width= 420)
         self.list.column("#3", width= 300)
-        self.list.column("#4", width= 80)
+        self.list.column("#4", width= 40)
         self.list.column("#5", width= 50)
         self.list.column("#6", width= 20)
+        self.list.column("#7", width= 20)
 
         self.list.place(rely= 0.01, relx= 0.01, relwidth= 0.96, relheight= 0.98)
 
