@@ -141,6 +141,26 @@ class Functions():
         self.limpar_tela()
         self.desconecta_bd()
 
+    def search_clint_status(self):
+        self.conectar_bd()
+        self.list.delete(*self.list.get_children())
+
+        self.ano = self.entry_ano.get()
+        self.mes = self.entry_mes.get()
+        self.status = self.entry_status.get()
+
+        self.cursor.execute("""
+                    SELECT codigo, tarefa, cliente, status, ano, mes, dia
+                    FROM controle
+                    WHERE status = ?
+                    """, (self.status,))
+
+        searchTar = self.cursor.fetchall()
+        for i in searchTar:
+            self.list.insert("", END, values= i)
+        self.limpar_tela()
+        self.desconecta_bd()
+
 class Controler(Functions):
 
     color_buttons = "DodgerBlue"
@@ -246,6 +266,11 @@ class Controler(Functions):
                                 background= self.color_buttons,
                                 bd= 3, command= self.limpar_tela)
         self.bt_limpar.place(rely=0.8, relx=0.38, relwidth=0.07, relheight=0.1)
+
+        self.bt_buscar_concluidos = Button(self.frame_1, text= "Buscar Status",
+                                           background= self.color_buttons,
+                                           bd= 3, command= self.search_clint_status)
+        self.bt_buscar_concluidos.place(rely= 0.8, relx= 0.46, relwidth= 0.08, relheight= 0.1)
 
     def list_frame_2(self):
         self.list = ttk.Treeview(self.frame_2, height= 3, columns= ("col1", "col2", "col3", "col4", "col5", "col6", "col7"))
